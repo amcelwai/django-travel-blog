@@ -5,163 +5,120 @@
 
 {% block meta_description %}Browse our travel photo gallery featuring stunning images from our adventures around the world.{% endblock %}
 
-{% block extra_head %}
-    <link rel="preload" as="image" href="{% if photos.0.image %}{{ photos.0.image.url }}{% endif %}">
-{% endblock %}
-
 {% block content %}
 <main id="main-content">
-    <!-- Gallery Hero -->
-    <section class="hero">
-        <!-- Video Background -->
-        {% include 'blog/partials/video_background.html' %}
-        
-        <!-- Fallback Background -->
-        <div class="hero-background">
-            <div class="hero-particles"></div>
-        </div>
-        <div class="hero-content">
-            <div class="hero-badge">PHOTO GALLERY</div>
-            <h1 class="hero-title">
-                <span class="hero-main">Visual Stories</span>
-                <span class="hero-subtitle">{{ photos.count }} Amazing Photos</span>
-            </h1>
-            <p class="hero-description">
-                A collection of our favorite moments captured during our travels, 
-                from breathtaking landscapes to delicious local dishes.
-            </p>
+    <!-- Minimalist Gallery Header -->
+    <section class="gallery-header">
+        <div class="container">
+            <div class="gallery-header-content">
+                <h1 class="gallery-title">Gallery</h1>
+                <p class="gallery-subtitle">A curated collection of moments from our travels</p>
+                <div class="gallery-stats">
+                    <span class="photo-count">{{ photos.count }} Photos</span>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Filter Options -->
-    <div class="gallery-filters">
+    <!-- Clean Filter Bar -->
+    <section class="gallery-filters">
         <div class="container">
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">All Photos</button>
-                <button class="filter-btn" data-filter="destinations">Destinations</button>
-                <button class="filter-btn" data-filter="food">Food</button>
-                <button class="filter-btn" data-filter="culture">Culture</button>
-                <button class="filter-btn" data-filter="nature">Nature</button>
+            <div class="filter-wrapper">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="landscape">Landscapes</button>
+                    <button class="filter-btn" data-filter="food">Food</button>
+                    <button class="filter-btn" data-filter="culture">Culture</button>
+                    <button class="filter-btn" data-filter="nature">Nature</button>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Photo Gallery with Cards -->
-    <section class="gallery-preview">
+    <!-- Modern Photography Gallery -->
+    <section class="photography-gallery">
         <div class="container">
             {% if photos %}
-                <div class="gallery-grid" id="gallery-grid">
+                <div class="gallery-masonry" id="gallery-masonry">
                     {% for photo in photos %}
-                        <div class="gallery-item" 
+                        <div class="gallery-photo" 
                              data-category="{{ photo.category|lower }}"
-                             data-destination="{% if photo.destination %}{{ photo.destination.slug }}{% endif %}"
-                             data-post="{% if photo.blog_post %}{{ photo.blog_post.slug }}{% endif %}">
+                             data-aos="fade-up"
+                             data-aos-delay="{{ forloop.counter0|add:100 }}">
                             
-                            <img src="{{ photo.image.url }}" 
-                                 alt="{{ photo.caption }}"
-                                 class="gallery-img lightbox-trigger"
-                                 data-caption="{{ photo.caption }}"
-                                 data-location="{% if photo.destination %}{{ photo.destination.name }}{% endif %}"
-                                 data-post="{% if photo.blog_post %}{{ photo.blog_post.title }}{% endif %}"
-                                 loading="lazy">
-                            
-                            <div class="gallery-overlay">
-                                <div class="gallery-info">
-                                    {% if photo.title %}
-                                        <h3>{{ photo.title }}</h3>
-                                    {% elif photo.caption %}
-                                        <h3>{{ photo.caption|truncatewords:8 }}</h3>
-                                    {% else %}
-                                        <h3>Travel Photo</h3>
-                                    {% endif %}
-                                    
-                                    {% if photo.destination %}
-                                        <p>📍 {{ photo.destination.name }}</p>
-                                    {% endif %}
-                                    
-                                    {% if photo.taken_date %}
-                                        <p>📅 {{ photo.taken_date|date:"M d, Y" }}</p>
-                                    {% endif %}
+                            <div class="photo-container">
+                                <img src="{{ photo.image.url }}" 
+                                     alt="{{ photo.caption|default:'Travel Photography' }}"
+                                     class="gallery-image"
+                                     loading="lazy"
+                                     onclick="openLightbox('{{ photo.image.url }}', '{{ photo.caption|escapejs }}', '{% if photo.destination %}{{ photo.destination.name|escapejs }}{% endif %}')">
+                                
+                                <div class="photo-overlay">
+                                    <div class="photo-info">
+                                        {% if photo.destination %}
+                                            <span class="photo-location">{{ photo.destination.name }}</span>
+                                        {% endif %}
+                                        {% if photo.taken_date %}
+                                            <span class="photo-date">{{ photo.taken_date|date:"Y" }}</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
 
-                <!-- Load More Button -->
+                <!-- Load More (if paginated) -->
                 {% if is_paginated and page_obj.has_next %}
-                    <div class="load-more-container">
-                        <button class="btn-primary" onclick="loadMorePhotos({{ page_obj.next_page_number }})">
-                            Load More Photos
+                    <div class="load-more-section">
+                        <button class="load-more-btn" onclick="loadMorePhotos({{ page_obj.next_page_number }})">
+                            Load More
                         </button>
                     </div>
                 {% endif %}
 
-                <!-- Pagination for SEO -->
-                {% if is_paginated %}
-                    <div class="pagination" style="display: none;">
-                        {% if page_obj.has_previous %}
-                            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                        {% endif %}
-                        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                        {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}">Next</a>
-                        {% endif %}
-                    </div>
-                {% endif %}
             {% else %}
-                <div class="no-photos">
-                    <h3>No photos yet</h3>
-                    <p>We're still uploading our travel memories! Check back soon.</p>
+                <div class="empty-gallery">
+                    <div class="empty-content">
+                        <h3>No photos yet</h3>
+                        <p>We're building our gallery. Check back soon!</p>
+                    </div>
                 </div>
             {% endif %}
         </div>
     </section>
-
-    <!-- Featured Destinations -->
-    {% if featured_destinations %}
-        <section class="featured-destinations">
-            <div class="container">
-                <h2>Featured Destinations</h2>
-                <p class="section-intro">Explore the places behind these photos</p>
-                
-                <div class="destinations-grid">
-                    {% for destination in featured_destinations %}
-                        <article class="destination-card">
-                            {% if destination.featured_image %}
-                                <img src="{{ destination.featured_image.url }}" 
-                                     alt="{{ destination.name }}, {{ destination.country }}"
-                                     class="lightbox-trigger"
-                                     data-caption="{{ destination.name }}, {{ destination.country }}"
-                                     data-location="{{ destination.name }}"
-                                     loading="lazy">
-                            {% endif %}
-                            
-                            <div class="destination-content">
-                                <div class="destination-country">{{ destination.country }}</div>
-                                <h3>
-                                    <a href="{% url 'blog:destination_detail' destination.slug %}">
-                                        {{ destination.name }}
-                                    </a>
-                                </h3>
-                                <p>{{ destination.description|truncatewords:15 }}</p>
-                                <a href="{% url 'blog:destination_detail' destination.slug %}" class="read-more">
-                                    Explore →
-                                </a>
-                            </div>
-                        </article>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
-    {% endif %}
 </main>
 
+<!-- Modern Lightbox -->
+<div id="photo-lightbox" class="lightbox">
+    <div class="lightbox-backdrop" onclick="closeLightbox()"></div>
+    <div class="lightbox-container">
+        <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+        <div class="lightbox-content">
+            <img id="lightbox-image" src="" alt="" />
+            <div class="lightbox-info">
+                <h3 id="lightbox-caption"></h3>
+                <p id="lightbox-location"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-// Gallery filtering functionality
+// Modern Gallery JavaScript
 document.addEventListener('DOMContentLoaded', function() {
+    initializeGalleryFilters();
+    setupLightbox();
+});
+
+// Gallery filtering
+function initializeGalleryFilters() {
     const filterButtons = document.querySelectorAll('.filter-btn');
-    const galleryItems = document.querySelectorAll('.gallery-item');
+    const galleryItems = document.querySelectorAll('.gallery-photo');
     
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -171,30 +128,62 @@ document.addEventListener('DOMContentLoaded', function() {
             filterButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             
-            // Filter items with animation
+            // Filter photos
             galleryItems.forEach(item => {
-                if (filter === 'all') {
+                const category = item.dataset.category;
+                if (filter === 'all' || category === filter) {
                     item.style.display = 'block';
-                    setTimeout(() => item.style.opacity = '1', 10);
+                    item.style.opacity = '1';
                 } else {
-                    const category = item.dataset.category;
-                    if (category.includes(filter)) {
-                        item.style.display = 'block';
-                        setTimeout(() => item.style.opacity = '1', 10);
-                    } else {
-                        item.style.opacity = '0';
-                        setTimeout(() => item.style.display = 'none', 300);
-                    }
+                    item.style.opacity = '0';
+                    setTimeout(() => {
+                        if (item.style.opacity === '0') {
+                            item.style.display = 'none';
+                        }
+                    }, 300);
                 }
             });
         });
     });
-});
+}
 
-// Load more photos function
+// Lightbox functionality
+function setupLightbox() {
+    const lightbox = document.getElementById('photo-lightbox');
+    
+    // Close on backdrop click
+    lightbox.querySelector('.lightbox-backdrop').addEventListener('click', closeLightbox);
+    
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            closeLightbox();
+        }
+    });
+}
+
+function openLightbox(imageSrc, caption, location) {
+    const lightbox = document.getElementById('photo-lightbox');
+    const image = document.getElementById('lightbox-image');
+    const captionEl = document.getElementById('lightbox-caption');
+    const locationEl = document.getElementById('lightbox-location');
+    
+    image.src = imageSrc;
+    image.alt = caption;
+    captionEl.textContent = caption || 'Travel Photo';
+    locationEl.textContent = location || '';
+    
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('photo-lightbox');
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
 function loadMorePhotos(page) {
-    // For now, redirect to next page
-    // Could be enhanced with AJAX later
     window.location.href = `?page=${page}`;
 }
 </script>
