@@ -1,0 +1,193 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} - Margo & Drew's Adventures{% endblock %}
+
+{% block meta_description %}{{ post.meta_description|default:post.excerpt|truncatewords:25 }}{% endblock %}
+
+{% block content %}
+<main id="main-content">
+    <article class="blog-post">
+        <!-- Featured Image -->
+        {% if post.featured_image %}
+            <div class="post-hero">
+                <img src="{{ post.featured_image.url }}" 
+                     alt="{{ post.title }}"
+                     class="post-hero-image lightbox-trigger"
+                     data-caption="{{ post.title }}"
+                     data-location="{% if post.destination %}{{ post.destination.name }}{% endif %}"
+                     data-post="{{ post.title }}"
+                     >
+            </div>
+        {% endif %}
+
+        <!-- Post Header -->
+        <header class="post-header">
+            <div class="container">
+                {% if post.category %}
+                    <span class="post-category">{{ post.category.name }}</span>
+                {% endif %}
+                
+                <h1>{{ post.title }}</h1>
+                
+                <div class="post-meta">
+                    <time datetime="{{ post.created_at|date:'Y-m-d' }}">
+                        {{ post.created_at|date:"F j, Y" }}
+                    </time>
+                    
+                    {% if post.destination %}
+                        <span class="post-location">
+                            📍 <a href="{% url 'blog:destination_detail' post.destination.slug %}">
+                                {{ post.destination.name }}
+                            </a>
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <!-- Post Content -->
+        <div class="post-body">
+            <div class="container">
+                <div class="post-content">
+                    {{ post.content|safe }}
+                </div>
+
+                <!-- Food Experiences Section -->
+                {% if post.food_experiences.exists %}
+                    <section class="food-experiences">
+                        <h3>🍽️ Food Highlights</h3>
+                        <div class="food-grid">
+                            {% for food in post.food_experiences.all %}
+                                <div class="food-card">
+                                    {% if food.image %}
+                                        <img src="{{ food.image.url }}" 
+                                             alt="{{ food.dish_name }}"
+                                             class="lightbox-trigger"
+                                             data-caption="{{ food.dish_name }} at {{ food.restaurant_name }}"
+                                             data-location="{% if post.destination %}{{ post.destination.name }}{% endif %}"
+                                             data-post="{{ post.title }}"
+                                             loading="lazy"
+                                             >
+                                    {% endif %}
+                                    <div class="food-content">
+                                        <h4>{{ food.dish_name }}</h4>
+                                        <p class="restaurant">{{ food.restaurant_name }}</p>
+                                        {% if food.rating %}
+                                            <div class="rating">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= food.rating %}
+                                                        ⭐
+                                                    {% else %}
+                                                        ☆
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <p>{{ food.description }}</p>
+                                        {% if food.price %}
+                                            <span class="price">${{ food.price }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endif %}
+
+                <!-- Related Photos -->
+                {% if post.photos.exists %}
+                    <section class="post-gallery">
+                        <h3>📸 Photo Gallery</h3>
+                        <div class="gallery-grid">
+                            {% for photo in post.photos.all %}
+                                <div class="gallery-item">
+                                    <img src="{{ photo.image.url }}" 
+                                         alt="{{ photo.caption }}"
+                                         class="gallery-img lightbox-trigger"
+                                         data-caption="{{ photo.caption }}"
+                                         data-location="{% if post.destination %}{{ post.destination.name }}{% endif %}"
+                                         data-post="{{ post.title }}"
+                                         loading="lazy"
+                                         >
+                                    {% if photo.caption %}
+                                        <div class="gallery-overlay">
+                                            <p>{{ photo.caption }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endif %}
+
+                <!-- Tags -->
+                {% if post.tags %}
+                    <div class="post-tags">
+                        <h4>Tags:</h4>
+                        {% for tag in post.get_tags_list %}
+                            <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Navigation -->
+                <nav class="post-navigation">
+                    {% if previous_post %}
+                        <a href="{% url 'blog:post_detail' previous_post.slug %}" class="nav-previous">
+                            ← {{ previous_post.title }}
+                        </a>
+                    {% endif %}
+                    
+                    {% if next_post %}
+                        <a href="{% url 'blog:post_detail' next_post.slug %}" class="nav-next">
+                            {{ next_post.title }} →
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </article>
+
+    <!-- Related Posts -->
+    {% if related_posts %}
+        <section class="related-posts">
+            <div class="container">
+                <h3>Related Posts</h3>
+                <div class="posts-grid">
+                    {% for related in related_posts %}
+                        <article class="post-card">
+                            {% if related.featured_image %}
+                                <img src="{{ related.featured_image.url }}" 
+                                     alt="{{ related.title }}"
+                                     class="lightbox-trigger"
+                                     data-caption="{{ related.title }}"
+                                     data-location="{% if related.destination %}{{ related.destination.name }}{% endif %}"
+                                     data-post="{{ related.title }}"
+                                     loading="lazy"
+                                     >
+                            {% endif %}
+                            
+                            <div class="post-content">
+                                {% if related.category %}
+                                    <span class="post-category">{{ related.category.name }}</span>
+                                {% endif %}
+                                
+                                <h4>
+                                    <a href="{% url 'blog:post_detail' related.slug %}">{{ related.title }}</a>
+                                </h4>
+                                
+                                <p>{{ related.excerpt|truncatewords:15 }}</p>
+                                
+                                <a href="{% url 'blog:post_detail' related.slug %}" class="read-more">
+                                    Read More →
+                                </a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+</main>
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Search Results - Margo & Drew's Adventures{% endblock %}
+
+{% block meta_description %}Search results for "{{ query }}" on Margo & Drew's Adventures travel blog.{% endblock %}
+
+{% block content %}
+<main id="main-content">
+    <!-- Search Hero -->
+    <section class="search-hero">
+        <!-- Video Background -->
+        {% include 'blog/partials/video_background.html' %}
+        
+        <div class="container">
+            <h1>Search Results</h1>
+            {% if query %}
+                <p class="search-query">
+                    Results for: <strong>"{{ query }}"</strong>
+                </p>
+                <p class="search-count">
+                    Found {{ total_results }} result{{ total_results|pluralize }}
+                </p>
+            {% else %}
+                <p>Please enter a search term to find blog posts and destinations.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <form method="GET" action="{% url 'blog:search' %}">
+            <input type="text" 
+                   name="q" 
+                   class="search-input" 
+                   placeholder="Search blog posts, destinations, food..." 
+                   value="{{ query }}"
+                   aria-label="Search"
+                   autofocus>
+        </form>
+    </div>
+
+    {% if query %}
+        <!-- Blog Posts Results -->
+        {% if blog_posts %}
+            <section class="search-results">
+                <div class="container">
+                    <h2>📝 Blog Posts ({{ blog_posts.count }})</h2>
+                    <div class="posts-grid">
+                        {% for post in blog_posts %}
+                            <article class="post-card">
+                                {% if post.featured_image %}
+                                    <img src="{{ post.featured_image.url }}" 
+                                         alt="{{ post.title }}"
+                                         loading="lazy">
+                                {% endif %}
+                                
+                                <div class="post-content">
+                                    {% if post.category %}
+                                        <span class="post-category">{{ post.category.name }}</span>
+                                    {% endif %}
+                                    
+                                    <time class="post-date" datetime="{{ post.created_at|date:'Y-m-d' }}">
+                                        {{ post.created_at|date:"F j, Y" }}
+                                    </time>
+                                    
+                                    <h3>
+                                        <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a>
+                                    </h3>
+                                    
+                                    <p>{{ post.excerpt|truncatewords:25 }}</p>
+                                    
+                                    {% if post.destination %}
+                                        <span class="post-location">
+                                            📍 {{ post.destination.name }}
+                                        </span>
+                                    {% endif %}
+                                    
+                                    <a href="{% url 'blog:post_detail' post.slug %}" class="read-more">
+                                        Read More →
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+
+        <!-- Destinations Results -->
+        {% if destinations %}
+            <section class="search-results">
+                <div class="container">
+                    <h2>🌍 Destinations ({{ destinations.count }})</h2>
+                    <div class="destinations-grid">
+                        {% for destination in destinations %}
+                            <article class="destination-card">
+                                {% if destination.featured_image %}
+                                    <img src="{{ destination.featured_image.url }}" 
+                                         alt="{{ destination.name }}, {{ destination.country }}"
+                                         loading="lazy">
+                                {% endif %}
+                                
+                                <div class="destination-content">
+                                    <div class="destination-country">{{ destination.country }}</div>
+                                    
+                                    <h3>
+                                        <a href="{% url 'blog:destination_detail' destination.slug %}">
+                                            {{ destination.name }}
+                                        </a>
+                                    </h3>
+                                    
+                                    <p>{{ destination.description|truncatewords:20 }}</p>
+                                    
+                                    <div class="destination-stats">
+                                        {% if destination.posts.count %}
+                                            <span class="stat">
+                                                📝 {{ destination.posts.count }} post{{ destination.posts.count|pluralize }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <a href="{% url 'blog:destination_detail' destination.slug %}" class="read-more">
+                                        Explore →
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+
+        <!-- Food Experiences Results -->
+        {% if food_experiences %}
+            <section class="search-results">
+                <div class="container">
+                    <h2>🍽️ Food Experiences ({{ food_experiences.count }})</h2>
+                    <div class="food-grid">
+                        {% for food in food_experiences %}
+                            <div class="food-card">
+                                {% if food.image %}
+                                    <img src="{{ food.image.url }}" 
+                                         alt="{{ food.dish_name }}"
+                                         loading="lazy">
+                                {% endif %}
+                                <div class="food-content">
+                                    <h4>{{ food.dish_name }}</h4>
+                                    <p class="restaurant">{{ food.restaurant_name }}</p>
+                                    {% if food.rating %}
+                                        <div class="rating">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= food.rating %}
+                                                    ⭐
+                                                {% else %}
+                                                    ☆
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <p>{{ food.description|truncatewords:15 }}</p>
+                                    {% if food.destination %}
+                                        <span class="location">
+                                            📍 <a href="{% url 'blog:destination_detail' food.destination.slug %}">
+                                                {{ food.destination.name }}
+                                            </a>
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+
+        <!-- No Results -->
+        {% if not blog_posts and not destinations and not food_experiences %}
+            <section class="no-results">
+                <div class="container">
+                    <div class="no-results-content">
+                        <h2>No results found</h2>
+                        <p>Sorry, we couldn't find anything matching "<strong>{{ query }}</strong>"</p>
+                        
+                        <div class="search-suggestions">
+                            <h3>Search suggestions:</h3>
+                            <ul>
+                                <li>Try different keywords</li>
+                                <li>Check your spelling</li>
+                                <li>Search for destinations like "Thailand" or "Tokyo"</li>
+                                <li>Look for food terms like "ramen" or "street food"</li>
+                                <li>Try broader terms like "adventure" or "culture"</li>
+                            </ul>
+                        </div>
+
+                        <div class="popular-content">
+                            <h3>Popular content:</h3>
+                            <div class="quick-links">
+                                <a href="{% url 'blog:blog_list' %}" class="btn-secondary">Browse All Posts</a>
+                                <a href="{% url 'blog:destination_list' %}" class="btn-secondary">View Destinations</a>
+                                <a href="{% url 'blog:gallery' %}" class="btn-secondary">Photo Gallery</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+
+        <!-- Search Tips -->
+        <section class="search-tips">
+            <div class="container">
+                <div class="tips-content">
+                    <h3>💡 Search Tips</h3>
+                    <div class="tips-grid">
+                        <div class="tip">
+                            <h4>🌍 Destinations</h4>
+                            <p>Search for countries, cities, or regions like "Japan", "Bangkok", or "Southeast Asia"</p>
+                        </div>
+                        <div class="tip">
+                            <h4>🍜 Food</h4>
+                            <p>Find dishes, restaurants, or cuisines like "pad thai", "street food", or "ramen"</p>
+                        </div>
+                        <div class="tip">
+                            <h4>🎯 Categories</h4>
+                            <p>Search by post type like "food guide", "adventure", or "cultural sites"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+</main>
+{% endblock %}

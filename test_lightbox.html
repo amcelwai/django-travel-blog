@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightbox Test</title>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .test-image {
+            width: 300px;
+            height: 200px;
+            object-fit: cover;
+            margin: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        /* Lightbox trigger images */
+        .lightbox-trigger {
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+
+        .lightbox-trigger:hover {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+        }
+        
+        /* Enhanced Lightbox */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .lightbox-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            cursor: pointer;
+        }
+
+        .lightbox-container {
+            position: relative;
+            max-width: 95vw;
+            max-height: 95vh;
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10002;
+        }
+
+        .lightbox-close:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .lightbox-close svg {
+            width: 20px;
+            height: 20px;
+            color: #333;
+        }
+
+        .lightbox-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #lightbox-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-info {
+            display: none !important;  /* Hide the text box completely */
+            background: rgba(248, 250, 252, 0.7) !important;  /* Light grey/whitish with opacity */
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            max-width: 500px;
+            backdrop-filter: blur(10px);  /* Adds a nice glass effect */
+            border: 1px solid rgba(255, 255, 255, 0.4);  /* Subtle border */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);  /* Soft shadow */
+        }
+
+        .lightbox-info h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .lightbox-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .lightbox-meta span {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lightbox Test</h1>
+    <p>Click on any image to test the lightbox functionality.</p>
+    
+    <!-- Test images -->
+    <img src="https://via.placeholder.com/800x600/0066cc/ffffff?text=Test+Image+1" 
+         alt="Test Image 1" 
+         class="test-image lightbox-trigger"
+         data-caption="This is test image 1"
+         data-location="Test Location 1"
+         data-post="Test Post 1">
+    
+    <img src="https://via.placeholder.com/800x600/cc6600/ffffff?text=Test+Image+2" 
+         alt="Test Image 2" 
+         class="test-image lightbox-trigger"
+         data-caption="This is test image 2"
+         data-location="Test Location 2"
+         data-post="Test Post 2">
+    
+    <img src="https://via.placeholder.com/800x600/cc0066/ffffff?text=Test+Image+3" 
+         alt="Test Image 3" 
+         class="test-image lightbox-trigger"
+         data-caption="This is test image 3"
+         data-location="Test Location 3"
+         data-post="Test Post 3">
+
+    <script>
+        // Enhanced gallery lightbox
+        function initializeGallery() {
+            console.log('Initializing gallery lightbox'); // Debug log
+            
+            // Remove any existing lightbox elements
+            const existingLightbox = document.getElementById('lightbox');
+            if (existingLightbox) {
+                existingLightbox.remove();
+            }
+            
+            // Create new lightbox
+            createLightbox();
+            
+            // Add click events to all lightbox trigger images
+            const clickableImages = document.querySelectorAll('.lightbox-trigger');
+            console.log('Found lightbox triggers:', clickableImages.length); // Debug log
+            
+            clickableImages.forEach(img => {
+                img.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Lightbox trigger clicked'); // Debug log
+                    
+                    const src = this.src;
+                    const alt = this.alt;
+                    const caption = this.dataset.caption || alt;
+                    const location = this.dataset.location || '';
+                    const post = this.dataset.post || '';
+                    openLightbox(src, caption, location, post);
+                });
+            });
+        }
+
+        // Create lightbox HTML structure
+        function createLightbox() {
+            const lightbox = document.createElement('div');
+            lightbox.id = 'lightbox';
+            lightbox.className = 'lightbox';
+            
+            lightbox.innerHTML = `
+                <div class="lightbox-overlay" id="lightbox-overlay"></div>
+                <div class="lightbox-container">
+                    <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <div class="lightbox-content">
+                        <img id="lightbox-image" alt="" />
+                        <div class="lightbox-info">
+                            <h3 id="lightbox-caption"></h3>
+                            <div class="lightbox-meta">
+                                <span id="lightbox-location"></span>
+                                <span id="lightbox-post"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(lightbox);
+            
+            // Add event listeners
+            const overlay = lightbox.querySelector('.lightbox-overlay');
+            const closeBtn = lightbox.querySelector('.lightbox-close');
+            
+            // Close when clicking overlay
+            if (overlay) {
+                overlay.addEventListener('click', closeLightbox);
+            }
+            
+            // Close when clicking X button
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeLightbox);
+            }
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (lightbox.classList.contains('active') && e.key === 'Escape') {
+                    closeLightbox();
+                }
+            });
+        }
+
+        // Open lightbox with enhanced info
+        function openLightbox(imageSrc, caption, location, post) {
+            console.log('Opening lightbox with:', { imageSrc, caption, location, post }); // Debug log
+            
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const captionEl = document.getElementById('lightbox-caption');
+            const locationEl = document.getElementById('lightbox-location');
+            const postEl = document.getElementById('lightbox-post');
+            
+            if (!lightbox || !lightboxImage) {
+                console.error('Lightbox elements not found');
+                return;
+            }
+            
+            // Set image and info
+            lightboxImage.src = imageSrc;
+            lightboxImage.alt = caption;
+            
+            if (captionEl) captionEl.textContent = caption || '';
+            if (locationEl) locationEl.textContent = location ? `📍 ${location}` : '';
+            if (postEl) postEl.textContent = post ? `📝 ${post}` : '';
+            
+            // Show lightbox
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        // Close lightbox
+        function closeLightbox() {
+            console.log('Closing lightbox'); // Debug log
+            
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox) {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Initializing lightbox test'); // Debug log
+            initializeGallery();
+        });
+    </script>
+</body>
+</html>

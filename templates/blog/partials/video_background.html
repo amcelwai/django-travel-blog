@@ -1,0 +1,9 @@
+{% load static %}
+<!-- Optimized Video Background Component -->
+<div class="hero-video-container">
+    <video autoplay muted loop playsinline class="hero-video" loading="lazy" preload="metadata">
+        <source src="{% static 'videos/travel-hero.webm' %}" type="video/webm">
+        <source src="{% static 'videos/travel-hero.mp4' %}" type="video/mp4">
+    </video>
+    <div class="hero-video-overlay"></div>
+</div>

@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Allow all crawlers to access the site
+Sitemap: /sitemap.xml
+
+# Disallow admin areas
+Disallow: /admin/
+
+# Allow important pages
+Allow: /posts/
+Allow: /destinations/
+Allow: /gallery/
+Allow: /about/

@@ -1,0 +1,205 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}{{ destination.name }}, {{ destination.country }} - Margo & Drew's Adventures{% endblock %}
+
+{% block meta_description %}{{ destination.description|truncatewords:25 }}{% endblock %}
+
+{% block extra_head %}
+    {% if destination.featured_image %}
+        <link rel="preload" as="image" href="{{ destination.featured_image.url }}">
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<main id="main-content">
+    <!-- Destination Hero -->
+    <section class="destination-hero">
+        {% if destination.featured_image %}
+            <div class="destination-hero-image">
+                <img src="{{ destination.featured_image.url }}" 
+                     alt="{{ destination.name }}, {{ destination.country }}"
+                     class="destination-hero-img lightbox-trigger"
+                     data-caption="{{ destination.name }}, {{ destination.country }}"
+                     data-location="{{ destination.name }}"
+                     loading="eager">
+            </div>
+        {% endif %}
+        
+        <div class="destination-hero-content">
+            <div class="container">
+                <div class="destination-country">{{ destination.country }}</div>
+                <h1>{{ destination.name }}</h1>
+                
+                <div class="destination-meta">
+                    {% if destination.latitude and destination.longitude %}
+                        <span class="coordinates">📍 {{ destination.latitude|floatformat:4 }}, {{ destination.longitude|floatformat:4 }}</span>
+                    {% endif %}
+                    
+                    <div class="destination-stats">
+                        {% with post_count=destination.posts.count photo_count=destination.photos.count %}
+                            {% if post_count %}
+                                <span class="stat">
+                                    📝 {{ post_count }} blog post{{ post_count|pluralize }}
+                                </span>
+                            {% endif %}
+                            
+                            {% if photo_count %}
+                                <span class="stat">
+                                    📸 {{ photo_count }} photo{{ photo_count|pluralize }}
+                                </span>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="destination-description">
+        <div class="container">
+            <div class="content-wrapper">
+                <h2>About {{ destination.name }}</h2>
+                <div class="description-content">
+                    {{ destination.description|safe }}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Posts from this Destination -->
+    {% if destination.posts.exists %}
+        <section class="destination-posts">
+            <div class="container">
+                <h2>Our {{ destination.name }} Adventures</h2>
+                <div class="posts-grid">
+                    {% for post in destination.posts.all %}
+                        <article class="post-card">
+                            {% if post.featured_image %}
+                                <img src="{{ post.featured_image.url }}" 
+                                     alt="{{ post.title }}"
+                                     class="lightbox-trigger"
+                                     data-caption="{{ post.title }}"
+                                     data-location="{{ destination.name }}"
+                                     data-post="{{ post.title }}"
+                                     loading="lazy"
+                                     >
+                            {% endif %}
+                            
+                            <div class="post-content">
+                                {% if post.category %}
+                                    <span class="post-category">{{ post.category.name }}</span>
+                                {% endif %}
+                                
+                                <time class="post-date" datetime="{{ post.created_at|date:'Y-m-d' }}">
+                                    {{ post.created_at|date:"F j, Y" }}
+                                </time>
+                                
+                                <h3>
+                                    <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a>
+                                </h3>
+                                
+                                <p>{{ post.excerpt|truncatewords:20 }}</p>
+                                
+                                <a href="{% url 'blog:post_detail' post.slug %}" class="read-more">
+                                    Read More →
+                                </a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Photo Gallery -->
+    {% if destination.photos.exists %}
+        <section class="destination-gallery">
+            <div class="container">
+                <h2>📸 Photo Gallery</h2>
+                <div class="gallery-grid">
+                    {% for photo in destination.photos.all %}
+                        <div class="gallery-item">
+                            <img src="{{ photo.image.url }}" 
+                                 alt="{{ photo.caption }}"
+                                 class="gallery-img lightbox-trigger"
+                                 data-caption="{{ photo.caption }}"
+                                 data-location="{{ destination.name }}"
+                                 loading="lazy"
+                                 >
+                            {% if photo.caption %}
+                                <div class="gallery-overlay">
+                                    <p>{{ photo.caption }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Food Highlights -->
+    {% if destination.food_experiences.exists %}
+        <section class="destination-food">
+            <div class="container">
+                <h2>🍽️ Must-Try Foods</h2>
+                <div class="food-grid">
+                    {% for food in destination.food_experiences.all %}
+                        <div class="food-card">
+                            {% if food.image %}
+                                <img src="{{ food.image.url }}" 
+                                     alt="{{ food.dish_name }}"
+                                     class="lightbox-trigger"
+                                     data-caption="{{ food.dish_name }} at {{ food.restaurant_name }}"
+                                     data-location="{{ destination.name }}"
+                                     loading="lazy"
+                                     >
+                            {% endif %}
+                            <div class="food-content">
+                                <h4>{{ food.dish_name }}</h4>
+                                <p class="restaurant">{{ food.restaurant_name }}</p>
+                                {% if food.rating %}
+                                    <div class="rating">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= food.rating %}
+                                                ⭐
+                                            {% else %}
+                                                ☆
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <p>{{ food.description }}</p>
+                                {% if food.price %}
+                                    <span class="price">${{ food.price }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Navigation -->
+    <nav class="destination-navigation">
+        <div class="container">
+            {% if previous_destination %}
+                <a href="{% url 'blog:destination_detail' previous_destination.slug %}" class="nav-previous">
+                    ← {{ previous_destination.name }}
+                </a>
+            {% endif %}
+            
+            <a href="{% url 'blog:destination_list' %}" class="nav-all">
+                All Destinations
+            </a>
+            
+            {% if next_destination %}
+                <a href="{% url 'blog:destination_detail' next_destination.slug %}" class="nav-next">
+                    {{ next_destination.name }} →
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+</main>
+{% endblock %}

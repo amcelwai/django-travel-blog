@@ -1,0 +1,413 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Destinations - Margo & Drew's Adventures{% endblock %}
+
+{% block meta_description %}Explore all the amazing destinations we've visited, from bustling cities to hidden gems around the world.{% endblock %}
+
+{% block content %}
+<main id="main-content">
+    <!-- Animated Hero Section with Video Background -->
+    <section class="destinations-hero">
+        <!-- Video Background -->
+        <div class="hero-video-container">
+            <video autoplay muted loop playsinline class="hero-video">
+                <source src="{% static 'videos/travel-hero.mp4' %}" type="video/mp4">
+                <source src="{% static 'videos/travel-hero.webm' %}" type="video/webm">
+                <!-- Fallback for browsers that don't support video -->
+            </video>
+            <!-- Video overlay for better text readability -->
+            <div class="hero-video-overlay"></div>
+        </div>
+        
+        <!-- Fallback background (shown if video fails to load) -->
+        <div class="hero-world-map"></div>
+        
+        <div class="hero-content">
+            <div class="hero-badge animate-fade-in">🌍 DESTINATIONS</div>
+            <h1 class="hero-title animate-slide-up">
+                <span class="hero-main">Our Journey Around the World</span>
+                <span class="hero-subtitle">{{ destinations.count }} Amazing Places Explored</span>
+            </h1>
+            <div class="hero-stats animate-fade-in-delay">
+                <div class="stat-item">
+                    <span class="stat-number">{{ destinations.count }}</span>
+                    <span class="stat-label">Destinations</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{% if destinations %}{{ destinations|length }}{% else %}0{% endif %}</span>
+                    <span class="stat-label">Countries</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">∞</span>
+                    <span class="stat-label">Memories</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Advanced Search and Filters -->
+    <section class="search-filter-section">
+        <div class="container">
+            <!-- Advanced Search Bar -->
+            <div class="search-container-advanced">
+                <form method="GET" class="search-form">
+                    <div class="search-input-wrapper">
+                        <input type="text" 
+                               id="destination-search"
+                               name="q" 
+                               class="search-input-advanced" 
+                               placeholder="Search destinations, countries, or experiences..." 
+                               value="{{ request.GET.q }}"
+                               aria-label="Search destinations"
+                               autocomplete="off">
+                        <button type="submit" class="search-button">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="search-suggestions" id="search-suggestions"></div>
+                </form>
+            </div>
+
+            <!-- Filter Tabs by Continent -->
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-continent="all">All Destinations</button>
+                <button class="filter-tab" data-continent="asia">Asia</button>
+                <button class="filter-tab" data-continent="europe">Europe</button>
+                <button class="filter-tab" data-continent="north-america">North America</button>
+                <button class="filter-tab" data-continent="south-america">South America</button>
+                <button class="filter-tab" data-continent="africa">Africa</button>
+                <button class="filter-tab" data-continent="oceania">Oceania</button>
+            </div>
+
+            <!-- View Controls -->
+            <div class="view-controls">
+                <div class="view-toggles">
+                    <button class="view-toggle active" data-view="grid" title="Grid View">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 3H10V10H3V3Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M14 3H21V10H14V3Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M14 14H21V21H14V14Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M3 14H10V21H3V14Z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Grid
+                    </button>
+                    <button class="view-toggle" data-view="list" title="List View">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M8 12H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M8 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M3 6H3.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M3 12H3.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M3 18H3.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        List
+                    </button>
+                    <button class="view-toggle" data-view="map" title="Map View">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 10C21 17 12 23 12 23S3 17 3 10C3 5.58172 7.02944 2 12 2C16.9706 2 21 5.58172 21 10Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Map
+                    </button>
+                </div>
+
+                <div class="sort-controls">
+                    <label for="sort-select">Sort by:</label>
+                    <select id="sort-select" class="sort-select">
+                        <option value="name">Name</option>
+                        <option value="country">Country</option>
+                        <option value="recent">Most Recent</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Destinations Carousel -->
+    {% if destinations %}
+    <section class="featured-carousel-section">
+        <div class="container">
+            <h2 class="section-title">Featured Destinations</h2>
+            <div class="carousel-container">
+                <div class="carousel-track" id="featured-carousel">
+                    {% for destination in destinations|slice:":6" %}
+                        <div class="carousel-card">
+                            <div class="carousel-image">
+                                {% if destination.featured_image %}
+                                    <img src="{{ destination.featured_image.url }}" 
+                                         alt="{{ destination.name }}, {{ destination.country }}"
+                                         loading="lazy">
+                                {% else %}
+                                    <img src="{% static 'images/placeholder-destination.jpg' %}" 
+                                         alt="{{ destination.name }}, {{ destination.country }}"
+                                         loading="lazy">
+                                {% endif %}
+                                <div class="carousel-overlay">
+                                    <h3>{{ destination.name }}</h3>
+                                    <p>{{ destination.country }}</p>
+                                    <a href="{% url 'blog:destination_detail' destination.slug %}" class="carousel-cta">Explore</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-nav carousel-prev" id="carousel-prev">‹</button>
+                <button class="carousel-nav carousel-next" id="carousel-next">›</button>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Interactive World Map -->
+    <section class="map-section" id="map-view" style="display: none;">
+        <div class="container">
+            <div class="map-container">
+                <div class="world-map" id="world-map">
+                    <!-- World map with clickable pins will be generated by JavaScript -->
+                    <svg viewBox="0 0 1000 500" class="map-svg">
+                        <!-- Simplified world map paths -->
+                        <g class="continents">
+                            <!-- This would contain actual SVG paths for continents -->
+                            <rect x="0" y="0" width="1000" height="500" fill="var(--blue-100)" opacity="0.1"/>
+                            <text x="500" y="250" text-anchor="middle" class="map-placeholder">Interactive World Map</text>
+                            <text x="500" y="270" text-anchor="middle" class="map-subtitle">Click on destination pins to explore</text>
+                        </g>
+                        <!-- Destination pins will be added by JavaScript -->
+                    </svg>
+                </div>
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <span class="legend-pin visited"></span>
+                        <span>Visited</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-pin featured"></span>
+                        <span>Featured</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destinations Grid/List -->
+    <section class="destinations-section">
+        <div class="container">
+            {% if destinations %}
+                <div class="destinations-container">
+                    <!-- Grid View -->
+                    <div class="destinations-grid" id="grid-view">
+                        {% for destination in destinations %}
+                            <article class="destination-card enhanced" 
+                                     data-continent="{{ destination.country|lower }}"
+                                     data-country="{{ destination.country|lower }}"
+                                     data-name="{{ destination.name|lower }}">
+                                
+                                <!-- Enhanced Image with Overlay -->
+                                <div class="destination-image-container">
+                                    {% if destination.featured_image %}
+                                        <img src="{{ destination.featured_image.url }}" 
+                                             alt="{{ destination.name }}, {{ destination.country }}"
+                                             class="destination-image lightbox-trigger"
+                                             data-caption="{{ destination.name }}, {{ destination.country }}"
+                                             data-location="{{ destination.name }}"
+                                             loading="lazy">
+                                    {% else %}
+                                        <img src="{% static 'images/placeholder-destination.jpg' %}" 
+                                             alt="{{ destination.name }}, {{ destination.country }}"
+                                             class="destination-image"
+                                             loading="lazy">
+                                    {% endif %}
+                                    
+                                    <!-- Country Flag -->
+                                    <div class="country-flag">🏳️</div>
+                                    
+                                    <!-- Quick Actions -->
+                                    <div class="quick-actions">
+                                        <button class="quick-action" title="Add to Favorites">
+                                            <svg viewBox="0 0 24 24" fill="none">
+                                                <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" stroke="currentColor" stroke-width="2"/>
+                                            </svg>
+                                        </button>
+                                        <button class="quick-action" title="Share">
+                                            <svg viewBox="0 0 24 24" fill="none">
+                                                <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.34C15.11 18.55 15.08 18.77 15.08 19C15.08 20.61 16.39 21.92 18 21.92C19.61 21.92 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" stroke="currentColor" stroke-width="2"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Image Overlay -->
+                                    <div class="image-overlay">
+                                        <div class="overlay-content">
+                                            <h3>{{ destination.name }}</h3>
+                                            <p>{{ destination.country }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Enhanced Content -->
+                                <div class="destination-content">
+                                    <div class="destination-header">
+                                        <div class="destination-location">
+                                            <span class="country">{{ destination.country }}</span>
+                                            <span class="city">{{ destination.name }}</span>
+                                        </div>
+                                        <div class="destination-rating">
+                                            <div class="stars">
+                                                ⭐⭐⭐⭐⭐
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="destination-description">{{ destination.description|truncatewords:15 }}</p>
+                                    
+                                    <!-- Enhanced Stats -->
+                                    <div class="destination-stats">
+                                        {% if destination.posts.count %}
+                                            <div class="stat-item">
+                                                <span class="stat-icon">📝</span>
+                                                <span class="stat-text">{{ destination.posts.count }} post{{ destination.posts.count|pluralize }}</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if destination.photos.count %}
+                                            <div class="stat-item">
+                                                <span class="stat-icon">📸</span>
+                                                <span class="stat-text">{{ destination.photos.count }} photo{{ destination.photos.count|pluralize }}</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="stat-item">
+                                            <span class="stat-icon">🍽️</span>
+                                            <span class="stat-text">5 experiences</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="destination-actions">
+                                        <a href="{% url 'blog:destination_detail' destination.slug %}" class="btn-primary">
+                                            Explore Destination
+                                        </a>
+                                        <button class="btn-secondary" onclick="showQuickPreview('{{ destination.slug }}')">
+                                            Quick View
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- List View -->
+                    <div class="destinations-list" id="list-view" style="display: none;">
+                        {% for destination in destinations %}
+                            <article class="destination-list-item" 
+                                     data-continent="{{ destination.country|lower }}"
+                                     data-country="{{ destination.country|lower }}"
+                                     data-name="{{ destination.name|lower }}">
+                                <div class="list-item-image">
+                                    {% if destination.featured_image %}
+                                        <img src="{{ destination.featured_image.url }}" 
+                                             alt="{{ destination.name }}, {{ destination.country }}"
+                                             loading="lazy">
+                                    {% else %}
+                                        <img src="{% static 'images/placeholder-destination.jpg' %}" 
+                                             alt="{{ destination.name }}, {{ destination.country }}"
+                                             loading="lazy">
+                                    {% endif %}
+                                </div>
+                                <div class="list-item-content">
+                                    <div class="list-item-header">
+                                        <h3>{{ destination.name }}</h3>
+                                        <span class="country-badge">{{ destination.country }}</span>
+                                    </div>
+                                    <p>{{ destination.description|truncatewords:30 }}</p>
+                                    <div class="list-item-stats">
+                                        <span>📝 {{ destination.posts.count }} posts</span>
+                                        <span>📸 {{ destination.photos.count }} photos</span>
+                                        <span>⭐ 5.0 rating</span>
+                                    </div>
+                                </div>
+                                <div class="list-item-actions">
+                                    <a href="{% url 'blog:destination_detail' destination.slug %}" class="btn-primary">
+                                        Explore
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Load More Button -->
+                <div class="load-more-container">
+                    <button class="load-more-btn" id="load-more-btn">
+                        Load More Destinations
+                        <svg class="load-more-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5V19M5 12L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Pagination (Hidden by default, shown if no JavaScript) -->
+                {% if is_paginated %}
+                    <div class="pagination-fallback">
+                        <span class="step-links">
+                            {% if page_obj.has_previous %}
+                                <a href="?page=1">&laquo; first</a>
+                                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                            {% endif %}
+
+                            <span class="current">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endif %}
+            {% else %}
+                <!-- Enhanced Empty State -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">🗺️</div>
+                    <h3>No Destinations Found</h3>
+                    <p>We haven't explored this area yet, but we're always planning our next adventure!</p>
+                    <div class="empty-state-actions">
+                        <button class="btn-primary" onclick="clearFilters()">Clear Filters</button>
+                        <a href="{% url 'blog:home' %}" class="btn-secondary">Back to Home</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter-section">
+        <div class="container">
+            <div class="newsletter-signup">
+                <h2>Join Our Adventure</h2>
+                <p>Get notified when we explore new destinations and discover hidden culinary gems!</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Your email address" required>
+                    <button type="submit">Subscribe to Updates</button>
+                </form>
+                <p class="newsletter-privacy">We respect your privacy. Unsubscribe at any time.</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Quick Preview Modal -->
+<div class="quick-preview-modal" id="quick-preview-modal">
+    <div class="quick-preview-content">
+        <button class="modal-close" onclick="closeQuickPreview()">&times;</button>
+        <div class="preview-content" id="preview-content">
+            <!-- Content loaded dynamically -->
+        </div>
+    </div>
+</div>
+{% endblock %}

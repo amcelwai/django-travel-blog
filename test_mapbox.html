@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox GL JS Test</title>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #test-map { 
+            width: 100%; 
+            height: 500px; 
+            border: 2px solid #1976d2; 
+            border-radius: 10px;
+            background: #bbdefb;
+        }
+        .debug { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Mapbox GL JS Test</h1>
+    
+    <div class="debug" id="debug-info">
+        <strong>Debug Info:</strong><br>
+        <div id="debug-content">Loading...</div>
+    </div>
+    
+    <div id="test-map"></div>
+    
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    
+    <script>
+        const debugEl = document.getElementById('debug-content');
+        
+        function log(message) {
+            console.log(message);
+            debugEl.innerHTML += message + '<br>';
+        }
+        
+        log('🚀 Starting Mapbox test...');
+        log('Mapbox GL available: ' + (typeof mapboxgl !== 'undefined'));
+        
+        if (typeof mapboxgl !== 'undefined') {
+            log('Mapbox GL version: ' + mapboxgl.version);
+        }
+        
+        const mapContainer = document.getElementById('test-map');
+        log('Map container found: ' + !!mapContainer);
+        log('Container dimensions: ' + mapContainer.offsetWidth + 'x' + mapContainer.offsetHeight);
+        
+        // Sample destinations data
+        const testDestinations = [
+            { name: "Tokyo", latitude: 35.6762, longitude: 139.6503 },
+            { name: "Paris", latitude: 48.8566, longitude: 2.3522 },
+            { name: "New York", latitude: 40.7128, longitude: -74.0060 }
+        ];
+        
+        try {
+            log('Creating Mapbox map...');
+            
+            // Use a public access token (this is just for testing)
+            mapboxgl.accessToken = 'pk.example.test';
+            
+            const map = new mapboxgl.Map({
+                container: 'test-map',
+                style: 'mapbox://styles/mapbox/light-v11',
+                center: [0, 20],
+                zoom: 1.5
+            });
+            
+            log('✅ Map created successfully');
+            
+            map.on('load', function() {
+                log('✅ Map loaded');
+                
+                // Add test markers
+                testDestinations.forEach(dest => {
+                    const marker = new mapboxgl.Marker()
+                        .setLngLat([dest.longitude, dest.latitude])
+                        .setPopup(new mapboxgl.Popup().setHTML(`<h3>${dest.name}</h3>`))
+                        .addTo(map);
+                    log('✅ Added marker for ' + dest.name);
+                });
+                
+                log('🎉 Mapbox test completed successfully!');
+            });
+            
+            map.on('error', function(e) {
+                log('⚠️ Map error (might be access token): ' + e.error.message);
+                log('Trying fallback approach...');
+                
+                // Create a simple fallback
+                document.getElementById('test-map').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #e3f2fd; color: #1976d2; flex-direction: column;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🌍</div>
+                        <div>Map Test - Fallback Mode</div>
+                        <div style="margin-top: 1rem;">Mapbox requires access token for full functionality</div>
+                    </div>
+                `;
+            });
+            
+        } catch (error) {
+            log('❌ Error: ' + error.message);
+            console.error('Map error:', error);
+        }
+    </script>
+</body>
+</html>

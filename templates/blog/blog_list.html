@@ -1,0 +1,108 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Blog Posts - Margo & Drew's Adventures{% endblock %}
+
+{% block meta_description %}Explore our travel blog posts featuring culinary adventures, destination guides, and authentic food experiences from around the world.{% endblock %}
+
+{% block content %}
+<main id="main-content">
+    <!-- Hero Section -->
+    <section class="hero">
+        <!-- Video Background -->
+        {% include 'blog/partials/video_background.html' %}
+        
+        <!-- Fallback Background -->
+        <div class="hero-background">
+            <div class="hero-particles"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">TRAVEL BLOG</div>
+            <h1 class="hero-title">
+                <span class="hero-main">Our Adventures</span>
+                <span class="hero-subtitle">Stories from the Road</span>
+            </h1>
+            <p class="hero-description">
+                Join us as we explore the world's most incredible destinations, 
+                discover authentic local cuisines, and share our travel experiences.
+            </p>
+        </div>
+    </section>
+
+    <!-- Blog Posts Grid -->
+    <section class="recent-posts">
+        <div class="container">
+            <h2>All Blog Posts</h2>
+            
+            {% if posts %}
+                <div class="posts-grid">
+                    {% for post in posts %}
+                        <article class="post-card">
+                            {% if post.featured_image %}
+                                <img src="{{ post.featured_image.url }}" 
+                                     alt="{{ post.title }}"
+                                     class="lightbox-trigger"
+                                     data-caption="{{ post.title }}"
+                                     data-location="{% if post.destination %}{{ post.destination.name }}{% endif %}"
+                                     data-post="{{ post.title }}"
+                                     loading="lazy"
+                                     >
+                            {% else %}
+                                <img src="{% static 'images/placeholder-post.jpg' %}" 
+                                     alt="{{ post.title }}"
+                                     loading="lazy">
+                            {% endif %}
+                            
+                            <div class="post-content">
+                                {% if post.category %}
+                                    <span class="post-category">{{ post.category.name }}</span>
+                                {% endif %}
+                                
+                                <time class="post-date" datetime="{{ post.created_at|date:'Y-m-d' }}">
+                                    {{ post.created_at|date:"F j, Y" }}
+                                </time>
+                                
+                                <h3>
+                                    <a href="{% url 'blog:post_detail' post.slug %}">{{ post.title }}</a>
+                                </h3>
+                                
+                                <p>{{ post.excerpt|truncatewords:25 }}</p>
+                                
+                                <a href="{% url 'blog:post_detail' post.slug %}" class="read-more">
+                                    Read More →
+                                </a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <div class="pagination">
+                        <span class="step-links">
+                            {% if page_obj.has_previous %}
+                                <a href="?page=1">&laquo; first</a>
+                                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                            {% endif %}
+
+                            <span class="current">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="no-posts">
+                    <h3>No blog posts yet</h3>
+                    <p>Check back soon for our latest travel adventures!</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</main>
+{% endblock %}

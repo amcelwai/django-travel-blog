@@ -1,0 +1,121 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}About Us - Margo & Drew's Adventures{% endblock %}
+
+{% block meta_description %}Meet Margo and Drew, food lovers and travel enthusiasts sharing authentic culinary adventures from around the world.{% endblock %}
+
+{% block content %}
+<main id="main-content">
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <!-- Video Background -->
+        {% include 'blog/partials/video_background.html' %}
+        
+        <div class="about-hero-content">
+            <div class="about-hero-text">
+                <div class="about-badge">ABOUT US</div>
+                <h1>{{ about.title }}</h1>
+                <p class="about-tagline">{{ about.intro_text }}</p>
+            </div>
+            <div class="about-hero-image">
+                {% if about.main_image %}
+                    <img src="{{ about.main_image.url }}" alt="Margo and Drew" loading="eager">
+                {% else %}
+                    <img src="{% static 'images/about-placeholder.jpg' %}" alt="Margo and Drew" loading="eager">
+                {% endif %}
+                <div class="image-overlay">
+                    <p>Living our best foodie life! 🌍✈️🍽️</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="about-stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🌍</div>
+                    <div class="stat-number">{{ about.countries_visited }}</div>
+                    <div class="stat-label">Countries Explored</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🍽️</div>
+                    <div class="stat-number">{{ about.dishes_tried }}+</div>
+                    <div class="stat-label">Local Dishes Tried</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-number">{{ about.years_traveling }}</div>
+                    <div class="stat-label">Years Traveling</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="about-story">
+        <div class="container">
+            <div class="story-content">
+                <div class="story-text">
+                    <h2>Our Story</h2>
+                    <div class="story-paragraphs">
+                        {{ about.main_content|linebreaks }}
+                    </div>
+                    
+                    <div class="story-highlights">
+                        <div class="highlight-item">
+                            <h3>🍜 Food Philosophy</h3>
+                            <p>We believe the best way to understand a culture is through its food. From street vendors to Michelin-starred restaurants, every meal tells a story.</p>
+                        </div>
+                        <div class="highlight-item">
+                            <h3>📸 Sharing Experiences</h3>
+                            <p>Through our blog, we share honest reviews, practical tips, and mouth-watering photos to inspire your own culinary adventures.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if about.secondary_image %}
+                <div class="story-image">
+                    <img src="{{ about.secondary_image.url }}" alt="Our travels" loading="lazy">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Posts Section -->
+    {% if recent_posts %}
+    <section class="about-recent-posts">
+        <div class="container">
+            <h2>Our Latest Adventures</h2>
+            <div class="posts-grid">
+                {% for post in recent_posts %}
+                <article class="post-card">
+                    {% if post.featured_image %}
+                        <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" loading="lazy">
+                    {% else %}
+                        <img src="{% static 'images/placeholder-post.jpg' %}" alt="{{ post.title }}" loading="lazy">
+                    {% endif %}
+                    <div class="post-content">
+                        {% if post.category %}
+                            <span class="post-category" style="background-color: {{ post.category.color }}">
+                                {{ post.category.name }}
+                            </span>
+                        {% endif %}
+                        <time class="post-date" datetime="{{ post.published_at|date:'Y-m-d' }}">
+                            {{ post.published_at|date:"F j, Y" }}
+                        </time>
+                        <h3><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+                        <p>{{ post.excerpt|truncatewords:15 }}</p>
+                        <a href="{{ post.get_absolute_url }}" class="read-more">Read More →</a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</main>
+{% endblock %}
