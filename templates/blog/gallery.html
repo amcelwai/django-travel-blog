@@ -6,21 +6,57 @@
 {% block meta_description %}Browse our travel photo gallery featuring stunning images from our adventures around the world.{% endblock %}
 
 {% block content %}
-<main id="main-content">
-    <!-- Modern Gallery Header -->
-    <section class="gallery-header">
-        <div class="container">
-            <div class="gallery-header-content">
-                <h1 class="gallery-title">Gallery</h1>
-                <p class="gallery-subtitle">A curated collection of moments from our travels</p>
-                <div class="gallery-stats">
-                    <span class="photo-count">{{ photos.count }} Photos</span>
-                    <span class="stats-divider">•</span>
-                    <span class="countries-count">29+ Countries</span>
+<!-- Gallery Hero Section with Video Background -->
+<section class="gallery-hero">
+    <!-- Video Background -->
+    {% include 'blog/partials/video_background.html' %}
+    
+    <!-- Fallback Background -->
+    <div class="hero-background">
+        <div class="hero-particles"></div>
+        <div class="hero-waves"></div>
+    </div>
+    
+    <div class="container">
+        <div class="gallery-hero-content">
+            <div class="hero-badge">📸 CAPTURED MOMENTS</div>
+            <h1 class="gallery-hero-title">Travel Gallery</h1>
+            <p class="gallery-hero-subtitle">A curated collection of moments from our adventures</p>
+            <div class="gallery-hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">{{ photos.count }}</span>
+                    <span class="stat-label">Photos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">29+</span>
+                    <span class="stat-label">Countries</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Years</span>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
+<main id="main-content"
+                    <span class="stat-label">Photos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">29+</span>
+                    <span class="stat-label">Countries</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Years Captured</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<main id="main-content">
 
     <!-- Clean Filter Bar -->
     <section class="gallery-filters">
